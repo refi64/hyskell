@@ -38,7 +38,7 @@
                   nil
                  )]
        [--str-- (fn [self] ~(mk-fmfn field-sfmstr))]
-       [--repr-- (fn [self] ~(mk-fmfn field-sfmstr))]])))
+       [--repr-- (fn [self] ~(mk-fmfn field-rfmstr))]])))
   (setv result (list (+ [base] (list classes))))
   `(do ~@result nil))
 
