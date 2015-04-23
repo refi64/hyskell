@@ -79,7 +79,8 @@
       [(= tp "data-match") (cond-match-base var p :fields true)]
       [(= tp "tupl-match") (cond-match-base var p :t `tuple)]
       [(= tp "list-match") (cond-match-base var p :t `list :no-slc true)]
-      [(= tp "test-value") [`(= ~var ~p)]]
+      [(= tp "test-value") [`(and (.try-func (--import-- "hyskell")
+                                  (fn [] ~var)) (= ~var ~p))]]
       [(= tp "fallthough") [`(.try-func (--import-- "hyskell") (fn [] ~var))]]
       [true                []]))
 
