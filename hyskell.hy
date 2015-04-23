@@ -59,7 +59,7 @@
       (if (= x (HySymbol "..."))
         (break))
       (res.append (func `(get ~var ~(HyInteger i)) x)))
-    (reduce + res))
+    (and res (reduce + res)))
 
   (defn match-base [func var p fields no-slc]
     (unless no-slc (setv p (slice p 1)))

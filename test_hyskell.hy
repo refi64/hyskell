@@ -47,4 +47,8 @@
 
   (match [1]
     [[1 _] (fail-test "")]
-    [_ nil]))
+    [_ nil])
+
+  (match (Nint 1 2)
+    [(Nint) nil]
+    [_ (fail-test "")]))
