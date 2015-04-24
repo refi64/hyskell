@@ -23,13 +23,14 @@
   (setv classes (accfor [t types]
     (setv fields (HyList (slice t 1)))
     (setv field-slist (HyList (map HyString fields)))
+    (setv field-mlist (accfor [f fields] `(. self ~f)))
     (defn mk-fmstr [s]
       (HyString (.join ", " (accfor [f fields] (% "%s=%%%s" (, f s))))))
     (setv field-sfmstr (mk-fmstr "s"))
     (setv field-rfmstr (mk-fmstr "r"))
     (setv sname (HyString (get t 0)))
     (defn mk-fmfn [v]
-      `(% "%s(%s)" (, ~sname (% ~v (tuple self.-fields)))))
+      `(% "%s(%s)" (, ~sname (% ~v (, ~@field-mlist)))))
     `(defclass ~(get t 0) [~name]
       [[--init-- (fn [self ~@fields]
                   (for [x (zip ~field-slist ~fields)]
