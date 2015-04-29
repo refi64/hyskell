@@ -23,7 +23,7 @@
   (setv classes (accfor [t types]
     (setv fields (HyList (slice t 1)))
     (setv field-slist (HyList (map HyString fields)))
-    (setv field-mlist (accfor [f fields] `(. self ~f)))
+    (setv field-mlist (list (accfor [f fields] `(. self ~f))))
     (defn mk-fmstr [s]
       (HyString (.join ", " (accfor [f fields] (% "%s=%%%s" (, f s))))))
     (setv field-sfmstr (mk-fmstr "s"))
