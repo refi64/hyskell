@@ -35,7 +35,7 @@
       [[--init-- (fn [self ~@fields]
                   (for [x (zip ~field-slist ~fields)]
                     (setattr self (get x 0) (get x 1)))
-                  (setv self.-fields ~fields)
+                  (setv self.-fields ~field-slist)
                   nil
                  )]
        [--str-- (fn [self] ~(mk-fmfn field-sfmstr))]
@@ -54,17 +54,20 @@
       [(isinstance p HyKeyword) "grap-value"]
       [true "test-value"]))
 
-  (defn map-fields [func var p]
+  (defn map-fields [func var p f]
     (setv res [])
     (for [[i x] (enumerate p)]
       (if (= x (HySymbol "..."))
         (break))
-      (res.append (func `(get ~var ~(HyInteger i)) x)))
+      ;(res.append (func `(get ~var ~(HyInteger i))) x)
+      (res.append (func (f (HyInteger i)) x))
+      )
     (and res (reduce + res)))
 
   (defn match-base [func var p fields no-slc]
     (unless no-slc (setv p (slice p 1)))
-    (map-fields func (if fields `(. ~var -fields) var) p))
+    (map-fields func var p (fn [i] (if fields `(getattr ~var (get (. ~var -fields) ~i))
+                                              `(get ~var ~i)))))
 
   (defn cond-match-base [var p &optional t no-slc fields]
     (setv p2 (if no-slc p (slice p 1)))

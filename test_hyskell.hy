@@ -18,8 +18,8 @@
   (test = s.p 1)
   (test true (isinstance i Node))
   (test true (isinstance s Node))
-  (test = i.-fields [0 7])
-  (test = s.-fields [1 "s"]))
+  (test = i.-fields ["p" "ival"])
+  (test = s.-fields ["p" "sval"]))
 
 (test-set test-match
   (match [1 2 3]
