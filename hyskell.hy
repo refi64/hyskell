@@ -59,9 +59,7 @@
     (for [[i x] (enumerate p)]
       (if (= x (HySymbol "..."))
         (break))
-      ;(res.append (func `(get ~var ~(HyInteger i))) x)
-      (res.append (func (f (HyInteger i)) x))
-      )
+      (res.append (func (f (HyInteger i)) x)))
     (and res (reduce + res)))
 
   (defn match-base [func var p fields no-slc]
@@ -71,7 +69,7 @@
 
   (defn cond-match-base [var p &optional t no-slc fields]
     (setv p2 (if no-slc p (slice p 1)))
-    (+ [`(isinstance ~var ~(or t (get p 0)))]
+    (+ [`(isinstance ~var ~(or t (get p 0))) ]
        (match-base recurse-cond var p fields no-slc)))
 
   (defn body-match-base [var p &optional fields no-slc]
@@ -97,15 +95,17 @@
       [(= tp "grap-value") [`(setv ~(HySymbol (slice p 2)) ~var)]]
       [true                []]))
 
-  (setv var (gensym))
+  (setv var (.replace (gensym) x))
 
-  `(do
+  (.replace `(do
     (setv ~var ~x)
     (cond ~@(accfor [branch branches]
       (if (< (len branch) 2)
         (macro-error branch "branch requires >= two items"))
       (setv tag (get branch 0))
-      (setv code `(do ~@(recurse-body var tag) ~@(slice branch 1)))
       (setv cond `(and true true ~@(recurse-cond var tag)))
-      `[~cond ~code])
-      [true (.match-failed (--import-- "hyskell"))])))
+      (setv code `(do ~@(recurse-body var tag) ~@(slice branch 1)))
+      (cond.replace tag)
+      (code.replace (get branch 1))
+      (.replace `[~cond ~code] tag))
+      [true (.match-failed (--import-- "hyskell"))])) x))
