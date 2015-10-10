@@ -12,34 +12,34 @@
 (defn try-func [f]
   (try
     (do (f) true)
-    (catch [] false)))
+    (except [] false)))
 
 (defmacro accfor [args &rest body]
-  (def names (slice args 0 nil 2))
+  (setv names (cut args 0 nil 2))
   `(genexpr ((fn [~@names] ~@body) ~@names) [~@args]))
 
 (defmacro defunion [name &rest types]
   (setv base `(defclass ~name [object] []))
   (setv classes (accfor [t types]
-    (setv fields (HyList (slice t 1)))
+    (setv fields (HyList (cdr t)))
     (setv field-slist (HyList (map HyString fields)))
     (setv field-mlist (list (accfor [f fields] `(. self ~f))))
     (defn mk-fmstr [s]
       (HyString (.join ", " (accfor [f fields] (% "%s=%%%s" (, f s))))))
     (setv field-sfmstr (mk-fmstr "s"))
     (setv field-rfmstr (mk-fmstr "r"))
-    (setv sname (HyString (get t 0)))
+    (setv sname (HyString (car t)))
     (defn mk-fmfn [v]
       `(% "%s(%s)" (, ~sname (% ~v (, ~@field-mlist)))))
     `(defclass ~(get t 0) [~name]
-      [[--init-- (fn [self ~@fields]
+      [--init-- (fn [self ~@fields]
                   (for [x (zip ~field-slist ~fields)]
                     (setattr self (get x 0) (get x 1)))
                   (setv self.-fields ~field-slist)
                   nil
                  )]
        [--str-- (fn [self] ~(mk-fmfn field-sfmstr))]
-       [--repr-- (fn [self] ~(mk-fmfn field-rfmstr))]])))
+       [--repr-- (fn [self] ~(mk-fmfn field-rfmstr))])))
   (setv result (list (+ [base] (list classes))))
   `(do ~@result nil))
 
@@ -63,12 +63,12 @@
     (and res (reduce + res)))
 
   (defn match-base [func var p fields no-slc]
-    (unless no-slc (setv p (slice p 1)))
+    (unless no-slc (setv p (cut p 1)))
     (map-fields func var p (fn [i] (if fields `(getattr ~var (get (. ~var -fields) ~i))
                                               `(get ~var ~i)))))
 
   (defn cond-match-base [var p &optional t no-slc fields]
-    (setv p2 (if no-slc p (slice p 1)))
+    (setv p2 (if no-slc p (cut p 1)))
     (+ [`(isinstance ~var ~(or t (get p 0))) ]
        (match-base recurse-cond var p fields no-slc)))
 
@@ -92,7 +92,7 @@
       [(= tp "data-match") (body-match-base var p :fields true)]
       [(= tp "tupl-match") (body-match-base var p)]
       [(= tp "list-match") (body-match-base var p :no-slc true)]
-      [(= tp "grap-value") [`(setv ~(HySymbol (slice p 2)) ~var)]]
+      [(= tp "grap-value") [`(setv ~(HySymbol (cut p 2)) ~var)]]
       [true                []]))
 
   (setv var (.replace (gensym) x))
@@ -104,7 +104,7 @@
         (macro-error branch "branch requires >= two items"))
       (setv tag (get branch 0))
       (setv cond `(and true true ~@(recurse-cond var tag)))
-      (setv code `(do ~@(recurse-body var tag) ~@(slice branch 1)))
+      (setv code `(do ~@(recurse-body var tag) ~@(cut branch 1)))
       (cond.replace tag)
       (code.replace (get branch 1))
       (.replace `[~cond ~code] tag))
