@@ -49,6 +49,7 @@ True ML-style pattern matching:
      [(, 1 2) (print "Got tuple (1, 2)")] ; against a tuple
      [1 (print "Got 1")] ; against an int or string
      [(Nint :v) (print "Got Nint with v =" v)] ; against a union branch
+     [(Nstr (:val "abc")) (print "Got Nstr with val of abc")] ; use : at the beginning of an expression to test attributes
      [(Nstr _) (print "Got Nstr")] ; use _ to ignore values
      [[1 2 ...] (print "Got list that starts with 1 and 2")] ; use ... to allow extra items at the end
      [[_ _ ...] (print "Got list with >= 2 elements")] ; use ... with _ to do cool stuff

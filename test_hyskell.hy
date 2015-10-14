@@ -50,5 +50,7 @@
     [_ nil])
 
   (match (Nint 1 2)
-    [(Nint) nil]
-    [_ (fail-test "")]))
+    [(Nint) nil])
+
+  (match (Nint 1 2)
+    [(Nint (:p 1) (:ival 2)) nil]))

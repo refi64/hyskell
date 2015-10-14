@@ -47,7 +47,10 @@
   (defn get-tp [p]
     (cond
       [(isinstance p HyExpression)
-        (if (= (get p 0) `,) "tupl-match" "data-match")]
+        (cond
+          [(= (car p) `,) "tupl-match"]
+          [(.startswith (car p) "\ufdd0:") "keyword-arg"]
+          [true "data-match"])]
       [(isinstance p HySymbol)
         (if (= p `_) "fallthough" "test-value")]
       [(isinstance p HyList) "list-match"]
@@ -75,25 +78,34 @@
   (defn body-match-base [var p &optional fields no-slc]
     (match-base recurse-body var p fields no-slc))
 
+  (defn get-kw-path [var p]
+    (setv base (get var 2 1 1))
+    `(. ~base ~(HySymbol (cut (car p) 2))))
+
   (defn recurse-cond [var p]
     (setv tp (get-tp p))
     (cond
-      [(= tp "data-match") (cond-match-base var p :fields true)]
-      [(= tp "tupl-match") (cond-match-base var p :t `tuple)]
-      [(= tp "list-match") (cond-match-base var p :t `list :no-slc true)]
-      [(= tp "test-value") [`(and (.try-func (--import-- "hyskell")
-                                  (fn [] ~var)) (= ~var ~p))]]
-      [(= tp "fallthough") [`(.try-func (--import-- "hyskell") (fn [] ~var))]]
-      [true                []]))
+      [(= tp "data-match")  (cond-match-base var p :fields true)]
+      [(= tp "tupl-match")  (cond-match-base var p :t `tuple)]
+      [(= tp "list-match")  (cond-match-base var p :t `list :no-slc true)]
+      [(= tp "test-value")  [`(and (.try-func (--import-- "hyskell")
+                                   (fn [] ~var)) (= ~var ~p))]]
+      [(= tp "keyword-arg") (if (!= (len p) 2)
+                              (macro-error p "keyword matches need 2 args"))
+                            ; [`(. ~base ~(HySymbol (cut (car p) 2)))]
+                            (recurse-cond (get-kw-path var p) (get p 1))]
+      [(= tp "fallthough")  [`(.try-func (--import-- "hyskell") (fn [] ~var))]]
+      [true                 []]))
 
   (defn recurse-body [var p]
     (setv tp (get-tp p))
     (cond
-      [(= tp "data-match") (body-match-base var p :fields true)]
-      [(= tp "tupl-match") (body-match-base var p)]
-      [(= tp "list-match") (body-match-base var p :no-slc true)]
-      [(= tp "grap-value") [`(setv ~(HySymbol (cut p 2)) ~var)]]
-      [true                []]))
+      [(= tp "data-match")  (body-match-base var p :fields true)]
+      [(= tp "tupl-match")  (body-match-base var p)]
+      [(= tp "list-match")  (body-match-base var p :no-slc true)]
+      [(= tp "grap-value")  [`(setv ~(HySymbol (cut p 2)) ~var)]]
+      [(= tp "keyword-arg") (recurse-body (get-kw-path var p) (get p 1))]
+      [true                 []]))
 
   (setv var (.replace (gensym) x))
 
