@@ -60,4 +60,4 @@ If none of the branches match, a `hyskell.MatchFailure` exception is thrown.
 Examples
 ********
 
-See `test_hyskell.hy` for the unit tests, written using [HyTest](https://github.com/kirbyfan64/hytest).
+See `test_hyskell.hy` for the unit tests, written using `HyTest<https://github.com/kirbyfan64/hytest>`_.
